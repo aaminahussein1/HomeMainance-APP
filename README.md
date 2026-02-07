@@ -49,7 +49,7 @@ backend-reviews-core
 
 ## 🧑‍💻 Sida Developer-ku u Shaqeeyo (Step by Step)
 
-### 1. Clone Repository
+### 1. Clone Repository TUSAALE SIDA AAD SHAQADA U QABAN LAHAYD 
 ```bash
 git clone https://github.com/ORG_NAME/REPO_NAME.git](https://github.com/Axmedbadr/HomeMainance-APP.git
 
