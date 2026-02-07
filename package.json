@@ -17,4 +17,7 @@
     "url": "https://github.com/Axmedbadr/HomeMainance-APP/issues"
   },
   "homepage": "https://github.com/Axmedbadr/HomeMainance-APP#readme"
+  "dependencies": {
+    "bcryptjs": "^3.0.3"
+  }
 }
