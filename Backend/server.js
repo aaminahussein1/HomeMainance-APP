@@ -1,19 +1,30 @@
+import express from 'express';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 
+
+import userRoutes from './routes/userRoutes.js';
+import bookingRoutes from './routes/routeBooking.js';
+import serviceRoutes from './routes/services.js';
+import reviewRoutes from './routes/reviews.js'; 
 
 dotenv.config();
-connectDB();
-
 const app = express();
 
-app.use(cors());
+
 app.use(express.json());
 
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log(" MongoDB Connected!"))
+    .catch((err) => console.log(" Database Error:", err));
+
+
+app.use('/api/users', userRoutes);
+app.use('/api/bookings', bookingRoutes);
 app.use('/api/services', serviceRoutes);
+app.use('/api/reviews', reviewRoutes); 
 
-app.get('/', (req, res) => {
-  res.send('HOME Maintenance API running...');
+const PORT = process.env.PORT || 5006; 
+app.listen(PORT, () => {
+    console.log(` Server is running on http://localhost:${PORT}`);
 });
-
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

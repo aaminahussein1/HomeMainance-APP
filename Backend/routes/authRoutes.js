@@ -1,25 +1,18 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const {
-  register,
-  login,
-  getMe,
-  updateProfile,
-  changePassword,
-  forgotPassword,
-  resetPassword
-} = require('../controllers/auth');
-const { protect } = require('../middleware/auth');
 
-// Public routes
-router.post('/register', register);
-router.post('/login', login);
-router.post('/forgot-password', forgotPassword);
-router.put('/reset-password/:token', resetPassword);
+import {
+  createBooking,
+  updateBookingStatus,
+  completeBooking,
+  getMyBookings,
+} from '../controllers/controllerBooking.js'; 
 
-// Protected routes
-router.get('/me', protect, getMe);
-router.put('/profile', protect, updateProfile);
-router.put('/change-password', protect, changePassword);
+import { protect } from '../middleware/auth.js'; 
 
-module.exports = router;
+router.post('/', protect, createBooking);
+router.patch('/:id/status', protect, updateBookingStatus);
+router.patch('/:id/complete', protect, completeBooking);
+router.get('/my', protect, getMyBookings);
+
+export default router;

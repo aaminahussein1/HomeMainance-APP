@@ -1,73 +1,64 @@
-const Booking = require('../models/Booking');
+import Booking from '../models/modelBooking.js';
 
-
-exports.createBooking = async (req, res) => {
+// 1. Create a New Booking
+export const createBooking = async (req, res) => {
   try {
-    const booking = await Booking.create({
+    // Waxaan hubinaynaa in xogta req.body ay u gudubto si sax ah
+    const newBooking = await Booking.create({
       ...req.body,
-      customer: req.user.id, // ka imanaya auth middleware
+      // HUBI: Haddii Model-kaagu rabo 'user', u beddel customer -> user
+      customer: req.user.id 
     });
-
-    res.status(201).json(booking);
+    
+    res.status(201).json({ success: true, data: newBooking });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    // Haddii 'Booking.create' ay shaqayn weydo, isticmaal 'new Booking' iyo 'save()'
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-
-exports.updateBookingStatus = async (req, res) => {
-  const { status, cancellationReason } = req.body;
-
-  try {
-    const booking = await Booking.findById(req.params.id);
-
-    if (!booking) {
-      return res.status(404).json({ message: 'Booking not found' });
-    }
-
-    booking.status = status;
-
-    if (status === 'cancelled') {
-      booking.cancellationReason = cancellationReason;
-    }
-
-    await booking.save();
-
-    res.json(booking);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
-
-exports.completeBooking = async (req, res) => {
+// 2. Update Booking Status
+export const updateBookingStatus = async (req, res) => {
   try {
     const booking = await Booking.findByIdAndUpdate(
-      req.params.id,
-      { status: 'completed' },
-      { new: true }
+      req.params.id, 
+      { status: req.body.status }, 
+      { new: true, runValidators: true } // runValidators waxay hubisaa in status-ka cusub uu sax yahay
     );
-
-    if (!booking) {
-      return res.status(404).json({ message: 'Booking not found' });
-    }
-
-    res.json(booking);
+    
+    if (!booking) return res.status(404).json({ success: false, message: "Ballanta lama helin" });
+    
+    res.json({ success: true, data: booking });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-
-exports.getMyBookings = async (req, res) => {
+// 3. Complete Booking
+export const completeBooking = async (req, res) => {
   try {
-    const bookings = await Booking.find({ customer: req.user.id })
-      .populate('service')
-      .populate('serviceProvider')
-      .sort({ createdAt: -1 });
-
-    res.json(bookings);
+    const booking = await Booking.findByIdAndUpdate(
+      req.params.id, 
+      { status: 'completed' }, 
+      { new: true }
+    );
+    
+    if (!booking) return res.status(404).json({ success: false, message: "Ballanta lama helin" });
+    
+    res.json({ success: true, data: booking });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+// 4. Get My Bookings
+export const getMyBookings = async (req, res) => {
+  try {
+    // 'populate' waxay soo saaraysaa xogta adeegga (Service details) halkii ay ahaan lahayd ID kaliya
+    const bookings = await Booking.find({ customer: req.user.id }).populate('service');
+    
+    res.json({ success: true, count: bookings.length, data: bookings });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
