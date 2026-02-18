@@ -35,7 +35,7 @@ app.use('/api/admin', adminRoutes);
 
 // 4. Global Error Handler
 app.use((err, req, res, next) => {
-    console.error("🔥 Server Error:", err.stack);
+    console.error(" Server Error:", err.stack);
     res.status(500).json({ 
         success: false, 
         message: "Cillad farsamo ayaa dhacday!",
@@ -45,5 +45,5 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5006;
 app.listen(PORT, () => {
-    console.log(`🚀 Server is running on http://localhost:${PORT}`);
+    console.log(` Server is running on http://localhost:${PORT}`);
 });
