@@ -86,7 +86,7 @@ const Home = () => {
           <div className="grid lg:grid-cols-4 gap-12 items-center">
             <div className="lg:col-span-1 space-y-6">
               <div className="w-16 h-2 bg-sky-500 rounded-full"></div>
-              <h2 className="text-4xl font-black tracking-tighter uppercase leading-none">Why <br/> Elite Care?</h2>
+              <h2 className="text-3xl font-black tracking-tighter uppercase leading-none">Why <br/> Home Maintenance?</h2>
               <p className="text-slate-500 text-sm font-medium leading-relaxed">Redefining service industry benchmarks through digital precision and vetted talent.</p>
             </div>
             

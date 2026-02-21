@@ -19,50 +19,53 @@ const ServiceCard = ({ service }) => {
   };
 
   return (
-    <div className="group relative bg-white rounded-[3rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.03)] overflow-hidden transition-all duration-500 hover:shadow-[0_40px_80px_rgba(14,165,233,0.12)] hover:-translate-y-3 flex flex-col items-center text-center">
+    /* h-full: Waxay hubisaa in dhammaan cards-ku ay hal dherer noqdaan */
+    <div className="group relative bg-white rounded-[2.5rem] border border-slate-100 shadow-[0_15px_40px_rgba(0,0,0,0.03)] overflow-hidden transition-all duration-500 hover:shadow-[0_30px_60px_rgba(14,165,233,0.1)] hover:-translate-y-2 flex flex-col h-full items-center text-center">
       
       {/* Decorative Accent Background */}
-      <div className="absolute top-[-10%] right-[-10%] w-48 h-48 bg-sky-50 rounded-full -z-0 group-hover:bg-sky-100/50 transition-colors duration-500"></div>
+      <div className="absolute top-[-5%] right-[-5%] w-40 h-40 bg-sky-50 rounded-full -z-0 group-hover:bg-sky-100/50 transition-colors duration-500"></div>
 
-      <div className="p-12 relative z-10 w-full flex flex-col items-center">
+      {/* flex-grow & justify-between: Waxay badhanka salka hoose ugu simayaan hal xariiq */}
+      <div className="p-8 relative z-10 w-full flex flex-col items-center flex-grow justify-between">
         
-        {/* Category Icon */}
-        <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 ${
-          isAuthenticated 
-          ? 'bg-sky-500 text-white shadow-sky-200 group-hover:rotate-12 group-hover:scale-110' 
-          : 'bg-slate-100 text-slate-400'
-        }`}>
-          {isAuthenticated ? <FiHome size={32} /> : <FiSettings size={32} />}
+        <div className="flex flex-col items-center w-full">
+            {/* Category Icon - Wax yar waa la yareeyay */}
+            <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-6 shadow-lg transition-all duration-500 ${
+              isAuthenticated 
+              ? 'bg-sky-500 text-white shadow-sky-100 group-hover:rotate-12' 
+              : 'bg-slate-100 text-slate-400'
+            }`}>
+              {isAuthenticated ? <FiHome size={28} /> : <FiSettings size={28} />}
+            </div>
+
+            {/* Qoraalka waa la yareeyay (text-2xl) waxaana la siiyay min-h si badhamadu u simnaadaan */}
+            <h3 className="text-2xl font-black text-slate-900 mb-2 tracking-tighter leading-tight min-h-[70px] flex items-center justify-center px-2">
+              {service.name}
+            </h3>
+            
+            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 mb-8">
+              Professional Category
+            </p>
         </div>
-
-        {/* Title & Category */}
-        <h3 className="text-3xl font-black text-slate-900 mb-3 tracking-tighter leading-tight">
-          {service.name}
-        </h3>
-        <p className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-400 mb-12">
-          Professional Category
-        </p>
         
-        {/* Adjusted Button - Qoraalka iyo Shape-ka waa la isku xidhay */}
+        {/* Explore Specialists Button - Pill Shape & Centered Text */}
         <button
           onClick={handlePush}
-          className={`flex items-center justify-between w-full px-8 py-5 rounded-[1.8rem] font-black text-[11px] uppercase tracking-[0.2em] transition-all duration-500 group/btn shadow-2xl ${
+          className={`flex items-center justify-between w-full px-6 py-4 rounded-[1.8rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-500 group/btn shadow-xl ${
             isAuthenticated 
-              ? "bg-[#0077b6] text-white hover:bg-[#023e8a] shadow-sky-200" 
+              ? "bg-[#0077b6] text-white hover:bg-[#023e8a] shadow-sky-100" 
               : "bg-slate-100 text-slate-400 border border-slate-200"
           }`}
         >
-          {/* Qoraalka badhanka */}
           <span className="relative z-10 block text-center flex-1">
             {isAuthenticated ? "Explore Specialists" : "Access Restricted"}
           </span>
           
-          {/* Arrow Icon - Waxaan ka dhigay mid ku dhex jira badhanka si habsami leh */}
-          <div className={`ml-4 p-2.5 rounded-full transition-all duration-500 ${
-            isAuthenticated ? 'bg-white/20 group-hover/btn:bg-white/30' : 'bg-slate-200'
+          <div className={`ml-3 p-2 rounded-full transition-all duration-500 ${
+            isAuthenticated ? 'bg-white/20' : 'bg-slate-200'
           }`}>
             {isAuthenticated ? (
-              <FiArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+              <FiArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
             ) : (
               <FiLock size={14} />
             )}
