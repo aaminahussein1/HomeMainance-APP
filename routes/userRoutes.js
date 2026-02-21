@@ -44,7 +44,6 @@ router.put('/approve-provider/:id', protect, async (req, res) => {
     try {
         const { status } = req.body; 
 
-        // Waxaan raadineynaa Provider-ka
         let provider = await Provider.findById(req.params.id);
         if (!provider) {
             provider = await Provider.findOne({ user: req.params.id });
@@ -80,16 +79,10 @@ router.get('/all-providers', async (req, res) => {
     }
 });
 
-// 4. HELITAANKA HAL KHABIIR (Profile Page - FIXED ID SEARCH)
+// 4. HELITAANKA HAL KHABIIR (Profile Page - KANI AYAA KAA MAQNAA)
 router.get('/provider/:id', async (req, res) => {
     try {
-        // Marka hore raadi adigoo isticmaalaya Provider ID
-        let provider = await Provider.findById(req.params.id).populate('user', 'name phone email');
-        
-        // Haddii la waayo, raadi adigoo isticmaalaya User ID (waa muhiim haddii laga soo diray Profile-ka qofka)
-        if (!provider) {
-            provider = await Provider.findOne({ user: req.params.id }).populate('user', 'name phone email');
-        }
+        const provider = await Provider.findById(req.params.id).populate('user', 'name phone email');
         
         if (!provider) {
             return res.status(404).json({ success: false, message: "Khabiirka lama helin!" });
@@ -97,8 +90,7 @@ router.get('/provider/:id', async (req, res) => {
 
         res.status(200).json({ success: true, data: provider });
     } catch (error) {
-        // Haddii uu jiro khalad dhanka ID-ga ama xogta
-        res.status(500).json({ success: false, message: "Profile-kan lama furi karo xilligan." });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
