@@ -1,5 +1,5 @@
 import React from 'react'
-import { FiFacebook, FiTwitter, FiInstagram, FiPhone, FiMapPin, FiActivity, FiArrowUpRight } from 'react-icons/fi'
+import { FiFacebook, FiTwitter, FiInstagram, FiPhone, FiMapPin, FiActivity, FiArrowUpRight,FiHome } from 'react-icons/fi'
 
 const Footer = () => {
   return (
@@ -17,8 +17,8 @@ const Footer = () => {
           <div className="flex flex-col items-center lg:items-start gap-2">
             <div className="flex items-center space-x-3 group cursor-pointer">
               <div className="bg-sky-500 text-white p-1.5 rounded-xl shadow-xl shadow-sky-500/20 transform group-hover:rotate-12 transition-transform duration-500">
-                <FiActivity size={18} />
-              </div>
+  <FiHome size={18} />
+</div>
               <span className="text-xl font-black text-white tracking-tighter uppercase">
                 HOME <span className="text-sky-500 italic">Maintenance</span>
               </span>
