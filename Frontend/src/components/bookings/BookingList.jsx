@@ -54,7 +54,8 @@ const BookingForm = () => {
 
       console.log("Sending to Server:", bookingData);
 
-      const response = await axios.post('http://localhost:5006/api/bookings', bookingData, config);
+     // KHALADKA:
+const response = await axios.post('http://localhost:5006/api/bookings', bookingData, config);
 
       if (response.data.success) {
         toast.success('Appointment booked successfully! ✨');
