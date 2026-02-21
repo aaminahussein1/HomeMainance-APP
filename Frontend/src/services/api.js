@@ -1,8 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  // Haddii uu mashruucu Live yahay, wuxuu isticmaalayaa '/api' 
-  // Haddii aad kombiyuutarkaaga ku jirto (localhost), wuxuu isticmaalayaa 'http://localhost:5006/api'
+  // Tani waa qaybta ugu muhiimsan
   baseURL: window.location.origin.includes('localhost') 
     ? 'http://localhost:5006/api' 
     : '/api',
