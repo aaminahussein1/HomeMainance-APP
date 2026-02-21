@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  // Tani waa qaybta ugu muhiimsan
+  // Koodkani wuxuu si otomaatig ah u gartaa haddii aad joogto Localhost iyo haddii aad Live tahay
   baseURL: window.location.origin.includes('localhost') 
     ? 'http://localhost:5006/api' 
     : '/api',
