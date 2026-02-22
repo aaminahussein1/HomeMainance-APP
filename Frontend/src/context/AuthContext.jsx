@@ -5,7 +5,6 @@ import toast from 'react-hot-toast';
 export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  // 1. Initial State ka soo qaado LocalStorage
   const [user, setUser] = useState(() => {
     try {
       const savedUser = localStorage.getItem('user');
@@ -18,13 +17,11 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
 
-  // 2. Hubi Login-ka mar kasta oo Page-ka la refresh gareeyo
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          // Backend-kaagu waa inuu leeyahay GET /api/users/profile
           const response = await api.get('/users/profile'); 
           if (response.data.success) {
             setUser(response.data.user);
@@ -32,18 +29,37 @@ export const AuthProvider = ({ children }) => {
           }
         } catch (error) {
           console.error("Auth check failed:", error);
-          // Haddii token-ku dhacay ama server-ku diiday, logout garee
           logout(); 
         }
       } else {
         setIsAuthenticated(false);
         setUser(null);
       }
-      setIsLoading(false); // Muhiim: Halkan geli si loading-ka u damiyo mar kasta
+      setIsLoading(false);
     };
     
     checkAuth();
   }, []);
+
+  // --- KANI WAA QAYBTII KA MAQNAYD (REGISTER) ---
+  const register = async (userData) => {
+    try {
+      const response = await api.post('/users/register', userData);
+      const { token, user: newUser } = response.data;
+      
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(newUser));
+      
+      setUser(newUser);
+      setIsAuthenticated(true);
+      toast.success('Diiwaangelintu si guul leh ayay u dhacday!');
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || 'Diiwaangelintu ma suurtagalin';
+      toast.error(message);
+      throw error;
+    }
+  };
 
   const login = async (credentials) => {
     try {
@@ -66,7 +82,6 @@ export const AuthProvider = ({ children }) => {
 
   const updateUser = async (updatedData) => {
     try {
-      // Hubi in Backend-kaagu leeyahay PUT /api/users/profile
       const response = await api.put('/users/profile', updatedData); 
       const newUserXog = response.data.user;
       
@@ -86,15 +101,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
     setUser(null);
     setIsAuthenticated(false);
-    // Waxaan ku daray condition si uusan u soo noqnoqon toast-ku haddii login la'aan la yahay
     if (isAuthenticated) toast.success('Si guul leh ayaad ka baxday!');
   };
 
+  // REGISTER halkan ayaan ku daray si looga helo useAuth()
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, logout, updateUser }}>
-      {/* isLoading halkan waa muhiim si uusan App-ku u muujin bogga login-ka 
-         isagoo weli xogta ka soo helaya Backend-ka.
-      */}
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, logout, register, updateUser }}>
       {!isLoading ? children : (
         <div className="flex items-center justify-center h-screen bg-[#020617]">
           <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
