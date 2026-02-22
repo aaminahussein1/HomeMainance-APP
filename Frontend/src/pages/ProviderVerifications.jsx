@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
-import { FiCheckCircle, FiXCircle, FiMail, FiMapPin, FiBriefcase, FiAlertCircle, FiLoader } from 'react-icons/fi';
+import { FiCheckCircle, FiXCircle, FiMail, FiMapPin, FiAlertCircle, FiLoader, FiUserCheck } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const ProviderVerifications = () => {
@@ -14,6 +14,7 @@ const ProviderVerifications = () => {
   const fetchPendingProviders = async () => {
     try {
       const response = await api.get('/providers');
+      // Kaliya soo saar kuwa weli 'pending' ah
       const pending = response.data.filter(p => p.status === 'pending');
       setPendingProviders(pending);
     } catch (error) {
@@ -25,10 +26,10 @@ const ProviderVerifications = () => {
   };
 
   const handleApprove = async (id, email) => {
-    if (window.confirm(`Are you sure you want to approve and invite ${email}?`)) {
+    if (window.confirm(`Are you sure you want to approve ${email} as a verified provider?`)) {
       try {
         await api.patch(`/providers/${id}/status`, { status: 'approved' });
-        toast.success(`Approved! Invitation sent to ${email}`);
+        toast.success(`Provider approved! Account is now active.`);
         fetchPendingProviders();
       } catch (error) {
         toast.error("Approval process failed.");
@@ -36,10 +37,22 @@ const ProviderVerifications = () => {
     }
   };
 
+  const handleReject = async (id) => {
+    if (window.confirm("Are you sure you want to reject this application?")) {
+      try {
+        await api.patch(`/providers/${id}/status`, { status: 'rejected' });
+        toast.error("Application rejected.");
+        fetchPendingProviders();
+      } catch (error) {
+        toast.error("Update failed.");
+      }
+    }
+  };
+
   if (loading) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc]">
       <FiLoader className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
-      <p className="text-slate-500 font-bold animate-pulse">Loading applications...</p>
+      <p className="text-slate-500 font-bold animate-pulse">Checking applications...</p>
     </div>
   );
 
@@ -50,11 +63,11 @@ const ProviderVerifications = () => {
         {/* Header Section */}
         <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight">Provider Verification</h1>
-            <p className="text-slate-500 mt-1 font-medium">Review and manage new professional applications</p>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tight">Provider <span className="text-indigo-600">Verification</span></h1>
+            <p className="text-slate-500 mt-1 font-medium">Identity and professional skill review</p>
           </div>
           <div className="bg-white px-5 py-2 rounded-2xl border border-slate-200 shadow-sm self-start">
-            <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Total Pending:</span>
+            <span className="text-xs font-black text-slate-400 uppercase tracking-widest">New Requests:</span>
             <span className="ml-2 text-indigo-600 font-black">{pendingProviders.length}</span>
           </div>
         </div>
@@ -62,10 +75,10 @@ const ProviderVerifications = () => {
         {pendingProviders.length === 0 ? (
           <div className="bg-white p-16 rounded-[3rem] text-center border-2 border-dashed border-slate-200 shadow-sm">
             <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
-              <FiCheckCircle className="w-10 h-10 text-slate-300" />
+              <FiUserCheck className="w-10 h-10 text-slate-300" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-800">All caught up!</h2>
-            <p className="text-slate-500 mt-2 font-medium">There are no pending provider applications at the moment.</p>
+            <h2 className="text-2xl font-bold text-slate-800">No Pending Requests</h2>
+            <p className="text-slate-500 mt-2 font-medium">All provider applications have been processed.</p>
           </div>
         ) : (
           <div className="grid gap-6">
@@ -96,7 +109,7 @@ const ProviderVerifications = () => {
                   </div>
 
                   <div className="flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-2xl text-xs font-bold w-fit">
-                    <FiAlertCircle /> Awaiting Identity Verification
+                    <FiAlertCircle /> Identity review required
                   </div>
                 </div>
                 
@@ -105,9 +118,12 @@ const ProviderVerifications = () => {
                     onClick={() => handleApprove(provider._id, provider.email)}
                     className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black hover:bg-emerald-600 shadow-lg shadow-slate-200 hover:shadow-emerald-200 transition-all active:scale-95"
                   >
-                    <FiCheckCircle size={18} /> Approve & Invite
+                    <FiCheckCircle size={18} /> Approve Account
                   </button>
-                  <button className="flex items-center justify-center bg-rose-50 text-rose-600 px-6 py-4 rounded-2xl font-black hover:bg-rose-600 hover:text-white transition-all active:scale-95">
+                  <button 
+                    onClick={() => handleReject(provider._id)}
+                    className="flex items-center justify-center bg-rose-50 text-rose-600 px-6 py-4 rounded-2xl font-black hover:bg-rose-600 hover:text-white transition-all active:scale-95"
+                  >
                     <FiXCircle size={18} /> Reject
                   </button>
                 </div>

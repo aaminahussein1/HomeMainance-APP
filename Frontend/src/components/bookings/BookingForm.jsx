@@ -42,14 +42,14 @@ const BookingForm = () => {
         }
       };
 
+      // Halkan waxaa laga saaray totalPrice
       const bookingData = {
         userId: user._id || user.id,
         service: providerId,
         date: formData.date,
         time: formData.time,
         address: formData.address,
-        description: formData.description || "No description provided.",
-        totalPrice: 25 
+        description: formData.description || "No description provided."
       };
 
       console.log("Sending to Server:", bookingData);
@@ -58,7 +58,7 @@ const BookingForm = () => {
 
       if (response.data.success) {
         toast.success('Appointment booked successfully! ✨');
-        navigate('/bookings'); 
+        navigate('/my-bookings'); // Waxaan u baddelay '/my-bookings' si uu u waafaqo Header-kaaga
       }
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Server connection error';
@@ -154,11 +154,7 @@ const BookingForm = () => {
               />
             </div>
 
-            {/* Summary Tag */}
-            <div className="bg-sky-50 rounded-2xl p-4 flex justify-between items-center border border-sky-100 border-dashed">
-               <span className="text-[10px] font-black text-sky-600 uppercase tracking-widest">Base Rate</span>
-               <span className="text-xl font-black text-slate-900">$25.00</span>
-            </div>
+            {/* Summary Tag (PAYMENT SECTION REMOVED) */}
 
             <button 
               type="submit" 
@@ -168,9 +164,9 @@ const BookingForm = () => {
             </button>
           </form>
 
-          {/* Verification Badge */}
+          {/* Verification Badge (PAYMENT REMOVED) */}
           <p className="text-center mt-8 text-[9px] font-black text-slate-300 uppercase tracking-[0.3em]">
-            &bull; Secure Payment Processing &bull;
+            &bull; Professional Home Maintenance &bull;
           </p>
         </div>
       </div>

@@ -2,24 +2,25 @@ import api from './api';
 
 const bookingService = {
   /**
-   * 1. In ballan cusub la abuuro
+   * 1. Abuuri ballan cusub (Hadda lacag la'aan ah)
    */
   create: async (bookingData) => {
-    const response = await api.post('/bookings', bookingData);
+    // Waxaan hubinaa inaan 'totalPrice' loo dirin backend-ka
+    const { totalPrice, ...cleanData } = bookingData; 
+    const response = await api.post('/bookings', cleanData);
     return response.data?.data || response.data || response;
   },
 
   /**
-   * 2. MUHIIM: Waxaa loo isticmaalaa Dashboard-ka
+   * 2. Soo aqri ballamaha macmiilka (Dashboard)
    */
   getMyBookings: async () => {
     const response = await api.get('/bookings/my-bookings');
-    // Hubi inaan soo celinno array-ga ballamaha
     return response.data?.data || response.data || [];
   },
 
   /**
-   * 3. SAXIDDA TYPEERROR: Magaca function-kan waa inuu la mid noqdaa kan BookingsPage
+   * 3. Ka hortagga TypeError (Magaca la midka ah BookingsPage)
    */
   getUserBookings: async () => {
     const response = await api.get('/bookings/my-bookings');
@@ -27,7 +28,7 @@ const bookingService = {
   },
 
   /**
-   * 4. In la soo rido ballan gaar ah
+   * 4. Soo rido ballan gaar ah ID-giisa
    */
   getById: async (id) => {
     const response = await api.get(`/bookings/${id}`);
@@ -35,14 +36,14 @@ const bookingService = {
   },
 
   /**
-   * 5. In la beddelo xaaladda ballanta
+   * 5. Beddel xaaladda ballanta (Approved -> Completed -> etc.)
    */
   updateStatus: async (id, status) => {
-    const response = await api.put(`/bookings/${id}/status`, { status });
+    // Hubi in endpoint-ka backend-ka uu yahay /bookings/status/:id ama /bookings/:id/status
+    const response = await api.put(`/bookings/status/${id}`, { status });
     return response.data?.data || response.data || response;
   }
 };
 
-// Waxaan u dhoofinaynaa labada qaab si looga fogaado import errors
 export { bookingService };
 export default bookingService;

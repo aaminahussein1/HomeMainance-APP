@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api'; 
-import { FiCalendar, FiMapPin, FiTool, FiCheckCircle, FiDollarSign, FiX, FiLoader, FiActivity, FiCreditCard,FiHome} from 'react-icons/fi';
+import { FiCalendar, FiMapPin, FiTool, FiCheckCircle, FiX, FiLoader, FiHome} from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedBooking, setSelectedBooking] = useState(null); 
-  const [transactionId, setTransactionId] = useState('');
 
   useEffect(() => {
     fetchMyBookings();
@@ -23,21 +21,6 @@ const MyBookings = () => {
       console.error("Registry sync failed");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handlePaymentSubmit = async (e) => {
-    e.preventDefault();
-    if (!transactionId.trim()) return toast.error("Transaction ID is required for verification");
-
-    try {
-      await api.put(`/bookings/payment/${selectedBooking._id}`, { transactionId });
-      toast.success("Payment credentials submitted for review!");
-      setSelectedBooking(null);
-      setTransactionId('');
-      fetchMyBookings();
-    } catch (err) {
-      toast.error("Failed to transmit payment data");
     }
   };
 
@@ -106,34 +89,15 @@ const MyBookings = () => {
                     </div>
                   </div>
 
-                  {/* Actions & Status */}
+                  {/* Status Only (Payment Removed) */}
                   <div className="flex flex-col items-center lg:items-end gap-4 min-w-[220px] w-full lg:w-auto pt-6 lg:pt-0 border-t lg:border-t-0 lg:border-l border-slate-100 lg:pl-10">
-                    <div className="text-4xl font-black text-slate-900 tracking-tighter">${booking.totalPrice || 25}</div>
-                    
-                    <span className={`px-6 py-2.5 rounded-full text-[9px] font-black uppercase tracking-[0.3em] border text-center w-full shadow-sm
+                    <span className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.3em] border text-center w-full shadow-sm
                       ${booking.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
                         booking.status === 'approved' ? 'bg-sky-50 text-sky-600 border-sky-100' : 
                         booking.status === 'rejected' ? 'bg-rose-50 text-rose-600 border-rose-100' :
                         'bg-amber-50 text-amber-600 border-amber-100 animate-pulse'}`}>
                       {booking.status === 'pending' ? 'Pending Approval' : booking.status}
                     </span>
-
-                    {booking.status === 'approved' && !booking.transactionId && (
-                      <button 
-                        onClick={() => setSelectedBooking(booking)}
-                        className="w-full bg-[#020617] text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-sky-500 transition-all shadow-xl shadow-sky-100"
-                      >
-                        <FiCreditCard size={18}/> Initiate Payment
-                      </button>
-                    )}
-
-                    {booking.transactionId && booking.status !== 'completed' && (
-                      <div className="w-full bg-sky-50/50 p-3 rounded-2xl border border-sky-100 text-center">
-                        <p className="text-[9px] text-sky-600 font-black uppercase tracking-tighter">
-                          Evidence Transmitted (Ref: {booking.transactionId.slice(0,8)})
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -141,50 +105,6 @@ const MyBookings = () => {
           </div>
         )}
       </div>
-
-      {/* --- PAYMENT MODAL --- */}
-      {selectedBooking && (
-        <div className="fixed inset-0 bg-[#020617]/80 backdrop-blur-md flex items-center justify-center p-6 z-50">
-          <div className="bg-white w-full max-w-md rounded-[3.5rem] p-10 shadow-2xl relative animate-in zoom-in duration-300">
-            <button onClick={() => setSelectedBooking(null)} className="absolute top-8 right-8 text-slate-300 hover:text-rose-500 transition-colors">
-              <FiX size={28}/>
-            </button>
-            
-            <div className="mb-8">
-              <h2 className="text-3xl font-black text-[#020617] mb-2 uppercase tracking-tighter">Verify <span className="text-sky-500 italic">Payment.</span></h2>
-              <p className="text-slate-500 text-xs font-medium leading-relaxed uppercase tracking-wide">Secure the transaction via mobile transfer:</p>
-            </div>
-
-            <div className="space-y-4 mb-10">
-              <div className="flex justify-between items-center bg-slate-50 p-5 rounded-[1.5rem] border border-slate-100">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Zaad Protocol</span>
-                <span className="text-sm font-black text-sky-600 tracking-widest underline decoration-2 underline-offset-4">063-XXXXXX</span>
-              </div>
-              <div className="flex justify-between items-center bg-slate-50 p-5 rounded-[1.5rem] border border-slate-100">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">eDahab Protocol</span>
-                <span className="text-sm font-black text-sky-600 tracking-widest underline decoration-2 underline-offset-4">065-XXXXXX</span>
-              </div>
-            </div>
-            
-            <form onSubmit={handlePaymentSubmit} className="space-y-6">
-              <div className="text-left">
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 ml-2">Transaction Identifier</label>
-                <input 
-                  type="text" 
-                  autoFocus
-                  value={transactionId}
-                  onChange={(e) => setTransactionId(e.target.value)}
-                  placeholder="TXN-REFERENCE-NUMBER"
-                  className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 outline-none focus:border-sky-500 focus:bg-white transition-all font-black text-slate-700 placeholder:text-slate-300 tracking-widest"
-                />
-              </div>
-              <button type="submit" className="w-full bg-[#020617] text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.3em] text-[11px] hover:bg-sky-500 transition-all shadow-2xl shadow-sky-200">
-                Confirm Deployment
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

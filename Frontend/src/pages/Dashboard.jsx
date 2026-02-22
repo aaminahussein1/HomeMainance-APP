@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { FiUser, FiShoppingBag, FiCalendar, FiDollarSign, FiStar, FiArrowRight, FiActivity, FiLayers } from 'react-icons/fi';
+import { FiUser, FiShoppingBag, FiCalendar, FiDollarSign, FiStar, FiArrowRight, FiActivity, FiLayers,FiHome } from 'react-icons/fi';
 import { bookingService } from '../services/bookingService';
 import api from '../services/api'; 
 import { Link } from 'react-router-dom';
@@ -62,7 +62,7 @@ const Dashboard = () => {
     <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
       <div className="flex flex-col items-center gap-4">
         <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-slate-500 font-bold animate-pulse">Loading dashboard data...</p>
+        <p className="text-slate-500 font-bold animate-pulse">Loading dashboard...</p>
       </div>
     </div>
   );
@@ -90,7 +90,7 @@ const Dashboard = () => {
 
           <div className="flex items-center gap-4 bg-white px-6 py-4 rounded-3xl shadow-sm border border-slate-200/50">
             <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500 shadow-inner">
-              <FiActivity size={24} />
+              <FiHome size={24} />
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">System Status</p>
@@ -99,8 +99,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Stats Cards Grid */}
-        <div className={`grid grid-cols-1 sm:grid-cols-2 ${user?.role === 'admin' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-8 mb-16`}>
+        {/* Stats Cards Grid - 2 cards for Customer, 4 for Admin */}
+        <div className={`grid grid-cols-1 sm:grid-cols-2 ${user?.role === 'admin' ? 'lg:grid-cols-4' : 'lg:grid-cols-2'} gap-8 mb-16`}>
           <StatCard
             icon={FiLayers}
             title="Total Requests"
@@ -108,13 +108,17 @@ const Dashboard = () => {
             subtitle="Overall activity"
             gradient="from-slate-800 to-slate-900 text-white"
           />
-          <StatCard
-            icon={FiCalendar}
-            title="Pending Actions"
-            value={stats.pendingBookings}
-            subtitle="Requires attention"
-            gradient="from-white to-white text-indigo-600 border border-slate-200"
-          />
+
+          {user?.role === 'admin' && (
+            <StatCard
+              icon={FiCalendar}
+              title="Pending Actions"
+              value={stats.pendingBookings}
+              subtitle="Requires attention"
+              gradient="from-white to-white text-indigo-600 border border-slate-200"
+            />
+          )}
+
           <StatCard
             icon={FiStar}
             title="Completed"
@@ -138,24 +142,30 @@ const Dashboard = () => {
         <div className="relative overflow-hidden bg-white rounded-[3rem] shadow-2xl shadow-slate-200/60 border border-white p-8 md:p-12">
           <div className="relative z-10 mb-10">
             <h2 className="text-2xl font-black text-slate-900 tracking-tight">Quick Actions</h2>
-            <p className="text-slate-400 font-medium">Select a shortcut to manage your tasks efficiently</p>
+            <p className="text-slate-400 font-medium">Direct access to services</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+          {/* Layout adaptive: Admin sees 3, Customer sees 2 */}
+          <div className={`grid grid-cols-1 ${user?.role === 'admin' ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-8 relative z-10`}>
             <QuickAction
               icon={FiShoppingBag}
               title={user?.role === 'admin' ? "System Bookings" : "New Request"}
-              description="Browse and book our premium services"
+              description={user?.role === 'admin' ? "Manage all client bookings" : "Browse and book our services"}
               link={user?.role === 'admin' ? "/admin/bookings" : "/services"}
               variant="indigo"
             />
-            <QuickAction
-              icon={FiCalendar}
-              title="Activity Log"
-              description="Monitor and track your recent history"
-              link={user?.role === 'admin' ? "/admin/bookings" : "/bookings"}
-              variant="dark"
-            />
+
+            {/* KALIYA ADMIN ayaa arki kara Activity Log qaybta Quick Actions */}
+            {user?.role === 'admin' && (
+              <QuickAction
+                icon={FiCalendar}
+                title="Activity Log"
+                description="Monitor and track all system history"
+                link="/admin/bookings"
+                variant="dark"
+              />
+            )}
+
             <QuickAction
               icon={FiUser}
               title="Account Settings"
@@ -165,7 +175,6 @@ const Dashboard = () => {
             />
           </div>
 
-          {/* Background Decorative Element */}
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-50 rounded-full blur-3xl opacity-50"></div>
         </div>
       </div>
@@ -173,16 +182,11 @@ const Dashboard = () => {
   );
 };
 
-// Reusable Stat Card Component
 const StatCard = ({ icon: Icon, title, value, subtitle, gradient }) => (
   <div className={`bg-gradient-to-br ${gradient} rounded-[2.5rem] p-8 shadow-xl hover:shadow-2xl transition-all duration-500 group cursor-default`}>
     <div className="flex justify-between items-start mb-8">
       <div className={`p-4 rounded-2xl transition-transform group-hover:scale-110 duration-500 ${gradient.includes('text-white') ? 'bg-white/10' : 'bg-slate-50 shadow-inner'}`}>
         <Icon size={26} />
-      </div>
-      <div className="flex flex-col items-end">
-         <span className={`text-[10px] font-black uppercase tracking-widest ${gradient.includes('text-white') ? 'opacity-60' : 'text-slate-400'}`}>Status</span>
-         <div className={`w-2 h-2 rounded-full mt-1 ${gradient.includes('text-white') ? 'bg-emerald-400' : 'bg-indigo-500'} animate-pulse`}></div>
       </div>
     </div>
     <h3 className={`text-[11px] font-black uppercase tracking-[0.2em] mb-2 ${gradient.includes('text-white') ? 'text-white/70' : 'text-slate-400'}`}>
@@ -195,7 +199,6 @@ const StatCard = ({ icon: Icon, title, value, subtitle, gradient }) => (
   </div>
 );
 
-// Reusable Quick Action Card Component
 const QuickAction = ({ icon: Icon, title, description, link, variant }) => {
   const styles = {
     indigo: "bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200",

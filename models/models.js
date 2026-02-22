@@ -32,31 +32,26 @@ const providerSchema = new mongoose.Schema({
   bio: { type: String, default: "" },             
   skills: [{ type: String }],                     
   experience: { type: Number, default: 0 },       
-  certificates: [{ type: String }],              
+  certificates: [{ type: String }],               
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }
 }, { timestamps: true });
 
-// 3. Booking Schema (LA SAXAY - FINAL)
+// 3. Booking Schema (PAYMENT-KA WAA LAGA SAARAY)
 const bookingSchema = new mongoose.Schema({
-  // 'service' halkan wuxuu tixraacayaa Provider-ka (ama Adeegga)
   service: { type: mongoose.Schema.Types.ObjectId, ref: 'Provider', required: true }, 
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   date: { type: String, required: true },
   time: { type: String },
   address: { type: String, required: true },
   description: { type: String, default: "No description provided" },
-  totalPrice: { type: Number, default: 25 },
   
-  // Status-yada loo baahan yahay si Frontend-ku u shaqeeyo
+  // Status-yada loo baahan yahay
   status: { 
     type: String, 
     enum: ['pending', 'approved', 'completed', 'rejected', 'cancelled'], 
     default: 'pending' 
-  },
-
-  // Qaybta lacag bixinta oo muhiim ah
-  transactionId: { type: String, default: null },
-  paidAt: { type: Date, default: null }
+  }
+  // Halkan waxaa laga saaray: totalPrice, transactionId, iyo paidAt
 }, { timestamps: true });
 
 // 4. Review Schema
