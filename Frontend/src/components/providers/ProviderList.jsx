@@ -9,6 +9,7 @@ const ProviderList = () => {
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
 
+  // 1. Soo qaado xogta URL-ka
   const serviceIdFromUrl = searchParams.get('serviceId');
   const serviceNameFromUrl = searchParams.get('serviceType');
 
@@ -17,33 +18,29 @@ const ProviderList = () => {
       try {
         setLoading(true);
         
-        // 1. Marka hore soo qaado dhammaan khubarada
+        // 2. Soo qaado dhammaan khubarada Approved-ka ah
         const res = await api.get('/users/providers'); 
         
         if (res.data && res.data.success) {
           let allData = res.data.data || [];
 
-          // 2. DEBUGGING: Fiiri console-ka biraawsarkaaga si aad u aragto farqiga
-          console.log("URL Name:", serviceNameFromUrl);
-          console.log("DB Data Sample:", allData[0]?.serviceType);
-
-          // 3. FILTERING LOGIC
-          if (serviceNameFromUrl || serviceIdFromUrl) {
+          // 3. FILTERING LOGIC (Halkan ayaa xalku ku jiraa)
+          if (serviceIdFromUrl || serviceNameFromUrl) {
             allData = allData.filter(provider => {
-              const pType = (provider.serviceType || "").toLowerCase();
-              const pId = String(provider.serviceId || "");
-              
-              const searchName = (serviceNameFromUrl || "").toLowerCase();
-              const searchId = String(serviceIdFromUrl || "");
+              // Nadiifi xogta URL-ka
+              const urlId = serviceIdFromUrl ? String(serviceIdFromUrl).trim() : null;
+              const urlName = serviceNameFromUrl ? String(serviceNameFromUrl).toLowerCase() : "";
 
-              // XALKA CILADDA: Waxaan isticmaaleynaa .includes() 
-              // si "Hagaajinta Tuubooyinka (Plumbing)" ay u hesho "plumbing"
-              const isMatch = 
-                (searchId && pId === searchId) || 
-                (searchName && pType !== "" && searchName.includes(pType)) || 
-                (searchName && pType !== "" && pType.includes(searchName));
+              // Nadiifi xogta MongoDB (ka hor is-barbardhigga)
+              const dbId = provider.serviceId ? String(provider.serviceId).trim() : null;
+              const dbType = provider.serviceType ? String(provider.serviceType).toLowerCase() : "";
 
-              return isMatch;
+              // XALKA: Hubi haddii ID-yadu is leeyihiin, 
+              // ama haddii magaca DB-ga uu ku dhex jiro qoraalka URL-ka (Partial Match)
+              const isIdMatch = urlId && dbId && dbId === urlId;
+              const isNameMatch = urlName && dbType && (urlName.includes(dbType) || dbType.includes(urlName));
+
+              return isIdMatch || isNameMatch;
             });
           }
 
@@ -57,35 +54,46 @@ const ProviderList = () => {
     };
 
     loadProviders();
-  }, [serviceNameFromUrl, serviceIdFromUrl]); 
+    // useEffect wuxuu kicayaa mar kasta oo URL-ku isbeddelo
+  }, [serviceIdFromUrl, serviceNameFromUrl]); 
 
   if (loading) return (
-    <div className="flex items-center justify-center min-h-[50vh]">
-      <div className="animate-spin rounded-full h-10 w-10 border-4 border-sky-500 border-t-transparent"></div>
+    <div className="flex flex-col items-center justify-center min-h-[50vh]">
+      <div className="animate-spin rounded-full h-10 w-10 border-4 border-sky-500 border-t-transparent shadow-md"></div>
+      <p className="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Raadinaya Khubaro...</p>
     </div>
   );
 
   return (
     <div className="container mx-auto px-6 pt-10 pb-20">
-      <div className="flex justify-between items-center mb-10">
-        <h1 className="text-4xl font-black text-slate-900">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+        <h1 className="text-4xl font-black text-slate-900 tracking-tighter">
           {serviceNameFromUrl || 'Dhammaan Khubarada'} <span className="text-sky-500 italic">Directory</span>
         </h1>
-        <div className="bg-white px-6 py-3 rounded-2xl shadow-lg border border-sky-50 flex items-center gap-3">
-          <FiZap className="text-sky-500" />
-          <span className="font-bold">{providers.length} Diyaar ah</span>
+        <div className="bg-white px-6 py-3 rounded-2xl shadow-xl shadow-sky-100/50 border border-sky-50 flex items-center gap-3">
+          <div className="bg-sky-500 p-2 rounded-lg text-white">
+            <FiZap size={16} />
+          </div>
+          <span className="font-black text-slate-700">{providers.length} Diyaar ah</span>
         </div>
       </div>
 
       {providers.length === 0 ? (
         <div className="text-center py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-100">
-          <FiSearch size={40} className="mx-auto text-slate-200 mb-4" />
+          <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <FiSearch size={30} className="text-slate-200" />
+          </div>
           <h3 className="text-xl font-bold text-slate-800">Ma jiro shaqaale loo helay</h3>
-          <p className="text-slate-400">Qaybta: "{serviceNameFromUrl}"</p>
+          <p className="text-slate-400 text-sm mt-2">
+            Ma jiro khabiir hadda u diiwaangashan qaybta: <br/> 
+            <span className="text-sky-500 font-bold">"{serviceNameFromUrl}"</span>
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {providers.map((p) => <ProviderCard key={p._id} provider={p} />)}
+          {providers.map((p) => (
+            p && <ProviderCard key={p._id} provider={p} />
+          ))}
         </div>
       )}
     </div>
