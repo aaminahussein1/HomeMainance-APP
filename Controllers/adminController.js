@@ -1,32 +1,19 @@
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Booking from '../models/Booking.js';
+import Service from '../models/Service.js'; // 1. Soo dhowee Service Model-ka
 
-// 1. Dashboard Stats - Inuu xogta ka soo saaro meesha saxda ah
+// 1. Dashboard Stats - Waa sidii aad u qortay (Lama taaban)
 export const getAdminStats = async (req, res) => {
     try {
         const totalUsers = await User.countDocuments({ role: 'customer' });
         const totalBookings = await Booking.countDocuments();
-        
-        // Active Providers: Waxaan ka soo xisaabinaynaa collection-ka 'providers' ee status-koodu yahay approved
         const activeProviders = await mongoose.connection.db.collection('providers').countDocuments({ status: 'approved' });
-        
-        // Pending Providers: Kuwa sugaya in la aqbalo
         const pendingCount = await mongoose.connection.db.collection('providers').countDocuments({ status: 'pending' });
 
-        // Revenue-ka dhabta ah
         const revenueData = await Booking.aggregate([
-            { 
-                $match: { 
-                    status: { $in: ['approved', 'completed'] } 
-                } 
-            },
-            { 
-                $group: { 
-                    _id: null, 
-                    total: { $sum: "$totalPrice" } 
-                } 
-            }
+            { $match: { status: { $in: ['approved', 'completed'] } } },
+            { $group: { _id: null, total: { $sum: "$totalPrice" } } }
         ]);
 
         res.status(200).json({
@@ -44,7 +31,7 @@ export const getAdminStats = async (req, res) => {
     }
 };
 
-// 2. Helitaanka Codsiyada Pending-ka ah
+// 2. Helitaanka Codsiyada Pending-ka ah (Lama taaban)
 export const getPendingProviders = async (req, res) => {
     try {
         const providers = await mongoose.connection.db.collection('providers')
@@ -56,7 +43,7 @@ export const getPendingProviders = async (req, res) => {
     }
 };
 
-// 3. Ansixinta Provider (Approve) - FINAL FIXED VERSION
+// 3. Ansixinta Provider (Approve) - WAXAAN KU DARNAY SERVICE MAPPING
 export const approveProvider = async (req, res) => {
     try {
         const { id } = req.params;
@@ -65,7 +52,6 @@ export const approveProvider = async (req, res) => {
             return res.status(400).json({ success: false, message: "ID-ga codsigu ma saxna" });
         }
 
-        // 1. Hel xogta codsiga ka hor intaanan waxba beddelin
         const providerData = await mongoose.connection.db.collection('providers').findOne({ 
             _id: new mongoose.Types.ObjectId(id) 
         });
@@ -74,16 +60,32 @@ export const approveProvider = async (req, res) => {
             return res.status(404).json({ success: false, message: "Codsiga lama helin" });
         }
 
-        // 2. MUHIIM: Status-ka ka beddel 'pending' una beddel 'approved'
-        // HA ISTICMAALIN deleteOne halkan!
+        // --- QAYBTA CUSUB: HELITAANKA SERVICE ID SAX AH ---
+        let finalServiceId = providerData.serviceId;
+
+        // Haddii uusan haysan ID, magaca service-ka ku raadi DB-ga si uu u galo qaybtiisa
+        if (!finalServiceId && providerData.serviceType) {
+            const foundService = await Service.findOne({ 
+                name: { $regex: new RegExp(`^${providerData.serviceType}$`, 'i') } 
+            });
+            if (foundService) {
+                finalServiceId = foundService._id;
+            }
+        }
+
+        // 2. Status-ka ka beddel 'pending' una beddel 'approved' + Update ServiceId
         await mongoose.connection.db.collection('providers').updateOne(
             { _id: new mongoose.Types.ObjectId(id) },
-            { $set: { status: 'approved' } }
+            { 
+                $set: { 
+                    status: 'approved',
+                    serviceId: finalServiceId // Waxaan xaqiijinaynaa in ID-gu jiro
+                } 
+            }
         );
 
         // 3. U samee ama u cusboonaysii Account-kiisa collection-ka 'users'
-        // Tani waxay u oggolaanaysaa inuu Login sameeyo isagoo leh role: provider
-        await User.findOneAndUpdate(
+        const updatedUser = await User.findOneAndUpdate(
             { email: providerData.email },
             { 
                 $set: {
@@ -91,6 +93,7 @@ export const approveProvider = async (req, res) => {
                     email: providerData.email,
                     phone: providerData.phone,
                     role: 'provider',
+                    serviceType: providerData.serviceType, // Inuu login-ka ku arko shaqadiisa
                     status: 'approved',
                     isVerified: true
                 },
@@ -98,10 +101,16 @@ export const approveProvider = async (req, res) => {
             },
             { upsert: true, new: true }
         );
+
+        // 4. Hubi in xogta Provider-ka ay ku xidhan tahay User ID-ga saxda ah
+        await mongoose.connection.db.collection('providers').updateOne(
+            { _id: new mongoose.Types.ObjectId(id) },
+            { $set: { user: updatedUser._id } }
+        );
         
         res.status(200).json({ 
             success: true, 
-            message: "Xirfadlaha si guul leh ayaa loo ansixiyey, hadda wuxuu ka muuqanayaa liiska dhabta ah!" 
+            message: `Xirfadlaha qaybta ${providerData.serviceType} si guul leh ayaa loo ansixiyey!` 
         });
 
     } catch (error) {
@@ -109,7 +118,7 @@ export const approveProvider = async (req, res) => {
     }
 };
 
-// 4. Diidmada Provider
+// 4. Diidmada Provider (Lama taaban)
 export const rejectProvider = async (req, res) => {
     try {
         const { id } = req.params;
