@@ -9,7 +9,7 @@ const ProviderList = () => {
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
 
-  // 1. Soo qaado xogta URL-ka
+  // 1. Soo qaado xogta URL-ka (Labadaba ID iyo Magaca)
   const serviceIdFromUrl = searchParams.get('serviceId');
   const serviceNameFromUrl = searchParams.get('serviceType');
 
@@ -18,24 +18,34 @@ const ProviderList = () => {
       try {
         setLoading(true);
         
-        // 2. Soo qaado dhammaan dadka 'Approved' ka ah Backend-ka
-        const res = await api.get('/users/providers'); 
+        // 2. U dir Backend-ka params-ka si uu isagu soo shaandheeyo (Server-side search)
+        // Tani waxay hubinaysaa in xogta rasmiga ah ay soo baxdo
+        const res = await api.get('/users/providers', {
+          params: {
+            serviceId: serviceIdFromUrl,
+            serviceType: serviceNameFromUrl
+          }
+        }); 
         
         if (res.data && res.data.success) {
           let allData = res.data.data || [];
 
-          // 3. FILTERING LOGIC (Saaxidda cilladda 0 Experts Found)
-          if (serviceNameFromUrl) {
-            const cleanUrlName = serviceNameFromUrl.toLowerCase().trim();
-            
+          // 3. FILTERING LOGIC (Fallback haddii Backend-ku uusan wada filter-gareyn)
+          if (serviceNameFromUrl || serviceIdFromUrl) {
             allData = allData.filter(provider => {
-              // Hubi inuu provider-ku leeyahay serviceType ka hor intaanan beddelin
-              const providerService = (provider.serviceType || "").toLowerCase().trim();
+              // Xogta Provider-ka
+              const pType = (provider.serviceType || "").toLowerCase().trim();
+              const pId = String(provider.serviceId || "");
               
-              // Xalka: Haddii midkood uu kan kale ku dhex jiro (Partial Match)
+              // Xogta URL-ka
+              const searchName = (serviceNameFromUrl || "").toLowerCase().trim();
+              const searchId = String(serviceIdFromUrl || "");
+
+              // XALKA: Hubi ID-ga marka hore, haddii kale Magaca
               return (
-                providerService.includes(cleanUrlName) || 
-                cleanUrlName.includes(providerService)
+                (searchId && pId === searchId) || 
+                (searchName && pType.includes(searchName)) || 
+                (searchName && searchName.includes(pType))
               );
             });
           }
@@ -50,8 +60,8 @@ const ProviderList = () => {
     };
 
     loadProviders();
-    // Ku dar serviceNameFromUrl halkan si uu foomku isu beddelo markaad category kale taabato
-  }, [serviceNameFromUrl]); 
+    // 4. Ku dar Labadaba dependency-ga si boggu u isbeddelo markaad category kale taabato
+  }, [serviceNameFromUrl, serviceIdFromUrl]); 
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[50vh]">
@@ -84,7 +94,7 @@ const ProviderList = () => {
           <h3 className="text-xl font-bold text-slate-800">Ma jiro shaqaale loo helay</h3>
           <p className="text-slate-400 text-sm mt-2">
             Ma jiro khabiir hadda u diiwaangashan qaybta: <br/> 
-            <span className="text-sky-500 font-bold">"{serviceNameFromUrl}"</span>
+            <span className="text-sky-500 font-bold">"{serviceNameFromUrl || 'Category-kan'}"</span>
           </p>
         </div>
       ) : (
