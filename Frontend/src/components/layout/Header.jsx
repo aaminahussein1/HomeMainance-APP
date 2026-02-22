@@ -39,106 +39,91 @@ const Header = () => {
   }
 
   return (
-    <header className="bg-white/70 backdrop-blur-md sticky top-0 z-50 border-b border-sky-50 transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-6 py-3">
+    /* 1. Waxaan ka saarnay 'max-w-7xl' waxaana ku darnay 'w-full' si uu u buuxiyo booska u banaan */
+    <header className="bg-white/70 backdrop-blur-md sticky top-0 z-50 border-b border-sky-50 transition-all duration-300 w-full">
+      {/* 2. 'mx-auto' ayaan ka saarnay qeybta sare, 'px-4' ayaan ku darnay si uusan geesaha ugu dhegin */}
+      <div className="w-full px-4 md:px-8 py-3">
         <div className="flex justify-between items-center">
           
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="bg-sky-500 text-white p-2.5 rounded-2xl shadow-lg shadow-sky-200 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
-              <FiHome size={22} />
+          {/* Logo - Hadda had iyo jeer wuxuu ka bilaaban doonaa bidixda booska u banaan */}
+          <Link to="/" className="flex items-center gap-3 group shrink-0">
+            <div className="bg-sky-500 text-white p-2 rounded-xl shadow-lg shadow-sky-200 group-hover:scale-110 transition-all duration-500">
+              <FiHome size={20} />
             </div>
             <div className="flex flex-col">
-               <span className="text-xl font-black tracking-tighter text-slate-900 leading-none">
+               <span className="text-lg font-black tracking-tighter text-slate-900 leading-none">
                 Home<span className="text-sky-500 italic">Maintenance</span>
               </span>
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-400">Maintenance Pro</span>
+              <span className="text-[7px] font-black uppercase tracking-[0.3em] text-slate-400">Maintenance Pro</span>
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-2 bg-slate-50/50 p-1.5 rounded-[1.5rem] border border-slate-100">
+          {/* Desktop Navigation - 'mx-4' ayaa lagu daray si uusan ugu dhawaan logada */}
+          <nav className="hidden lg:flex items-center gap-1 bg-slate-50/50 p-1 rounded-2xl border border-slate-100 mx-4">
             {menuItems.map((item) => (
               <Link 
                 key={item.path} 
                 to={item.path} 
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${
                   isActive(item.path) 
-                  ? 'bg-white text-sky-500 shadow-sm shadow-sky-100' 
+                  ? 'bg-white text-sky-500 shadow-sm' 
                   : 'text-slate-400 hover:text-slate-900 hover:bg-white/50'
                 }`}
               >
-                <item.icon size={14} className={isActive(item.path) ? 'text-sky-500' : ''} />
-                <span>{item.label}</span>
+                <item.icon size={13} className={isActive(item.path) ? 'text-sky-500' : ''} />
+                <span className="hidden xl:inline">{item.label}</span>
               </Link>
             ))}
           </nav>
 
           {/* Auth & User Profile */}
-          <div className="hidden md:flex items-center gap-5">
+          <div className="flex items-center gap-3 shrink-0">
             {!isAuthenticated ? (
-              <Link to="/register" className="group relative bg-slate-900 text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] overflow-hidden transition-all hover:bg-sky-500 hover:shadow-xl hover:shadow-sky-100 active:scale-95">
-                <span className="relative z-10">Register Now</span>
+              <Link to="/register" className="bg-slate-900 text-white px-6 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-sky-500 transition-all active:scale-95">
+                Register
               </Link>
             ) : (
-              <div className="flex items-center gap-4 pl-5 border-l border-slate-100">
-                <div className="flex flex-col items-end">
-                  <span className="text-[9px] font-black text-sky-500 uppercase tracking-widest leading-none mb-1">{user?.role}</span>
-                  <span className="text-xs font-black text-slate-900 leading-none">{user?.name?.split(' ')[0]}</span>
+              <div className="flex items-center gap-3 pl-4 border-l border-slate-100">
+                <div className="hidden sm:flex flex-col items-end">
+                  <span className="text-[8px] font-black text-sky-500 uppercase tracking-widest leading-none mb-1">{user?.role}</span>
+                  <span className="text-[11px] font-black text-slate-900 leading-none">{user?.name?.split(' ')[0]}</span>
                 </div>
-                <div className="relative group">
-                   <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center text-sky-500 border border-sky-100">
-                      <FiUser size={20} />
-                   </div>
-                   {/* Tooltip or Dropdown could go here */}
+                <div className="w-9 h-9 rounded-xl bg-sky-50 flex items-center justify-center text-sky-500 border border-sky-100">
+                  <FiUser size={18} />
                 </div>
                 <button 
                   onClick={handleLogout} 
-                  className="p-2.5 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all duration-300"
-                  title="Logout Session"
+                  className="p-2 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all"
+                  title="Logout"
                 >
-                  <FiLogOut size={18} />
+                  <FiLogOut size={16} />
                 </button>
               </div>
             )}
+            
+            {/* Mobile Menu Toggle - Waxaa la tusayaa kaliya marka shaashadu yar tahay */}
+            <button className="lg:hidden p-2 text-slate-900 bg-slate-50 rounded-xl border border-slate-100" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <FiX size={18} /> : <FiMenu size={18} />}
+            </button>
           </div>
-
-          {/* Mobile Menu Toggle */}
-          <button className="md:hidden p-3 text-slate-900 bg-slate-50 rounded-2xl border border-slate-100" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <FiX size={20} /> : <FiMenu size={20} />}
-          </button>
         </div>
 
-        {/* Mobile Sidebar Overlay */}
+        {/* Mobile Menu Dropdown */}
         {mobileMenuOpen && (
-          <div className="md:hidden mt-6 pb-8 space-y-3 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="lg:hidden mt-4 pb-4 space-y-2 animate-in fade-in slide-in-from-top-2">
             {menuItems.map((item) => (
               <Link 
                 key={item.path} 
                 to={item.path} 
-                className={`flex items-center gap-4 p-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${
-                  isActive(item.path) 
-                  ? 'bg-sky-500 text-white shadow-lg shadow-sky-100' 
-                  : 'bg-slate-50 text-slate-500 border border-slate-100'
+                className={`flex items-center gap-3 p-4 rounded-xl font-black text-[10px] uppercase tracking-widest ${
+                  isActive(item.path) ? 'bg-sky-500 text-white' : 'bg-slate-50 text-slate-500'
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <item.icon size={18} />
+                <item.icon size={16} />
                 <span>{item.label}</span>
               </Link>
             ))}
-
-            {!isAuthenticated ? (
-              <div className="pt-4 space-y-3">
-                <Link to="/register" className="flex items-center justify-center p-5 rounded-2xl bg-slate-900 text-white font-black text-xs uppercase tracking-widest" onClick={() => setMobileMenuOpen(false)}>
-                  Create Account
-                </Link>
-              </div>
-            ) : (
-              <button onClick={handleLogout} className="w-full flex items-center justify-center gap-3 p-5 rounded-2xl bg-rose-50 text-rose-600 font-black text-xs uppercase tracking-widest mt-4">
-                <FiLogOut /> Terminate Session
-              </button>
-            )}
           </div>
         )}
       </div>
@@ -146,4 +131,4 @@ const Header = () => {
   )
 }
 
-export default Header
+export default Header;

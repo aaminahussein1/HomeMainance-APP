@@ -1,11 +1,11 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { authService } from '../services/authService.js';
 import api from '../services/api'; 
 import toast from 'react-hot-toast';
 
 export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+  // 1. Initial State ka soo qaado LocalStorage
   const [user, setUser] = useState(() => {
     try {
       const savedUser = localStorage.getItem('user');
@@ -14,60 +14,51 @@ export const AuthProvider = ({ children }) => {
       return null;
     }
   });
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
 
+  // 2. Hubi Login-ka mar kasta oo Page-ka la refresh gareeyo
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-    
-    if (token && savedUser && savedUser !== "undefined") {
-      try {
-        setIsAuthenticated(true);
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        console.error("Error parsing user data", e);
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          // Backend-kaagu waa inuu leeyahay GET /api/users/profile
+          const response = await api.get('/users/profile'); 
+          if (response.data.success) {
+            setUser(response.data.user);
+            setIsAuthenticated(true);
+          }
+        } catch (error) {
+          console.error("Auth check failed:", error);
+          // Haddii token-ku dhacay ama server-ku diiday, logout garee
+          logout(); 
+        }
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
       }
-    }
-    setIsLoading(false);
+      setIsLoading(false); // Muhiim: Halkan geli si loading-ka u damiyo mar kasta
+    };
+    
+    checkAuth();
   }, []);
 
   const login = async (credentials) => {
     try {
-      const response = await authService.login(credentials);
-      if (response && response.token) {
-        localStorage.setItem('token', response.token); 
-        localStorage.setItem('user', JSON.stringify(response.user));
-        setUser(response.user);
-        setIsAuthenticated(true);
-        toast.success('Si guul leh ayaad u soo gashay!');
-        return response;
-      }
+      const response = await api.post('/users/login', credentials);
+      const { token, user: userData } = response.data;
+      
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      setUser(userData);
+      setIsAuthenticated(true);
+      toast.success('Si guul leh ayaad u soo gashay!');
+      return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Login-ku ma suurtagalin');
-      throw error;
-    }
-  };
-
-  const register = async (userData) => {
-    try {
-      const response = await authService.register(userData);
-      // Haddii uu yahay Customer, si toos ah u login garee
-      if (response && response.token && userData.role !== 'provider') {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
-        setUser(response.user);
-        setIsAuthenticated(true);
-        toast.success('Diiwaangelintu waa guul!');
-      } 
-      // Haddii uu yahay Provider, fariin uun u dir (Admin approval ayuu sugayaa)
-      else if (userData.role === 'provider') {
-        toast.success('Codsigaaga waa la diray, sug ansixinta adminka.');
-      }
-      return response;
-    } catch (error) {
-      const message = error.response?.data?.message || 'Diiwaangelintu way fashilantay';
+      const message = error.response?.data?.message || 'Login-ku ma suurtagalin';
       toast.error(message);
       throw error;
     }
@@ -75,17 +66,17 @@ export const AuthProvider = ({ children }) => {
 
   const updateUser = async (updatedData) => {
     try {
-      // Hubi in endpoint-ka backend-ka uu yahay /users/profile
+      // Hubi in Backend-kaagu leeyahay PUT /api/users/profile
       const response = await api.put('/users/profile', updatedData); 
-      const newUserXog = response.data.user || response.data;
+      const newUserXog = response.data.user;
       
       setUser(newUserXog);
       localStorage.setItem('user', JSON.stringify(newUserXog));
       toast.success('Profile-ka waa la cusboonaysiiyey!');
       return newUserXog;
     } catch (error) {
-      console.error("Update error:", error);
-      toast.error('Laguma guulaysan in la beddelo profile-ka');
+      const message = error.response?.data?.message || 'Laguma guulaysan in la beddelo profile-ka';
+      toast.error(message);
       throw error;
     }
   };
@@ -95,28 +86,26 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
     setUser(null);
     setIsAuthenticated(false);
-    toast.success('Si guul leh ayaad ka baxday!');
+    // Waxaan ku daray condition si uusan u soo noqnoqon toast-ku haddii login la'aan la yahay
+    if (isAuthenticated) toast.success('Si guul leh ayaad ka baxday!');
   };
 
   return (
-    <AuthContext.Provider value={{ 
-        user, 
-        isAuthenticated, 
-        isLoading, 
-        login, 
-        register, 
-        logout, 
-        updateUser
-    }}>
-      {children}
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, logout, updateUser }}>
+      {/* isLoading halkan waa muhiim si uusan App-ku u muujin bogga login-ka 
+         isagoo weli xogta ka soo helaya Backend-ka.
+      */}
+      {!isLoading ? children : (
+        <div className="flex items-center justify-center h-screen bg-[#020617]">
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };

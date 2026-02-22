@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api'; 
-import { FiCalendar, FiMapPin, FiTool, FiCheckCircle, FiDollarSign, FiX, FiLoader, FiActivity, FiCreditCard } from 'react-icons/fi';
+import { FiCalendar, FiMapPin, FiTool, FiCheckCircle, FiDollarSign, FiX, FiLoader, FiActivity, FiCreditCard,FiHome} from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const MyBookings = () => {
@@ -69,7 +69,7 @@ const MyBookings = () => {
         
         {bookings.length === 0 ? (
           <div className="bg-white p-20 rounded-[3rem] text-center border-2 border-dashed border-slate-100 shadow-sm">
-            <FiActivity className="mx-auto text-slate-200 mb-6" size={64} />
+            <FiHome className="mx-auto text-slate-200 mb-6" size={64} />
             <h3 className="text-xl font-black text-slate-900 mb-2">No Active Deployments</h3>
             <p className="text-slate-400 font-medium max-w-xs mx-auto text-sm leading-relaxed">Your service registry is currently empty. Start your first booking to see it here.</p>
           </div>
